@@ -51,26 +51,21 @@ function App() {
     throw new Error('No more good jokes.');
   }
 
-  const removeJoke = (id, group) => {
-    if (group === "LIKE") {
-      setLikes(prev => {
-        const newArray = prev.filter(item => item.id !== id);
-        return newArray;
-      })
-    } else {
-      setDislikes(prev => {
-        const newArray = prev.filter(item => item.id !== id);
-        return newArray;
-      })
-    }
+  const removeLike = (id) => {
+    setLikes(likes.filter(item => item.id !== id));
   }
 
-  const setOpinion = (opinion) => {
-    if (opinion === "LIKE") {
-      setLikes((curr) => [...curr, joke]);
-    } else {
-      setDislikes((curr) => [...curr, joke]);
-    }
+  const removeDislike = (id) => {
+    setDislikes(dislikes.filter(item => item.id !== id));
+  }
+
+  const likeCurrentJoke = () => {
+    setLikes([...likes, joke]);
+    fetchJoke();
+  }
+
+  const dislikeCurrentJoke = () => {
+    setDislikes([...dislikes, joke]);
     fetchJoke();
   }
 
@@ -83,15 +78,15 @@ function App() {
       {loading && <p>Loading...</p>}
       {error && <p>Something went wrong...</p>}
       {!loading && <p>{joke.text}</p>}
-      <button onClick={() => setOpinion("LIKE")} disabled={loading}>LIKE</button>
-      <button onClick={() => setOpinion("DISLIKE")} disabled={loading}>DISLIKE</button>
+      <button onClick={likeCurrentJoke} disabled={loading}>LIKE</button>
+      <button onClick={dislikeCurrentJoke} disabled={loading}>DISLIKE</button>
       <h2>LIKES</h2>
       <ul>
-        {likes.map(like => <li key={like}>{like.text}--{like.id} <button onClick={() => removeJoke(like.id, 'LIKE')}>REMOVE</button></li>)}
+        {likes.map(like => <li key={like}>{like.text}--{like.id} <button onClick={() => removeLike(like.id)}>REMOVE</button></li>)}
       </ul>
       <h2>DISLIKES</h2>
       <ul>
-        {dislikes.map(dislike => <li key={dislike}>{dislike.text}--{dislike.id} <button onClick={() => removeJoke(dislike.id, 'DISLIKE')}>REMOVE</button></li>)}
+        {dislikes.map(dislike => <li key={dislike}>{dislike.text}--{dislike.id} <button onClick={() => removeDislike(dislike.id)}>REMOVE</button></li>)}
       </ul>
     </div>
   );
