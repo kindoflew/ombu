@@ -65,17 +65,26 @@ function App() {
     }
   }
 
+  const setOpinion = (opinion) => {
+    if (opinion === "LIKE") {
+      setLikes((curr) => [...curr, joke]);
+    } else {
+      setDislikes((curr) => [...curr, joke]);
+    }
+    fetchJoke();
+  }
+
   useEffect(() => {
     fetchJoke();
-  }, [likes, dislikes]);
+  }, []);
 
   return (
     <div>
       {loading && <p>Loading...</p>}
       {error && <p>Something went wrong...</p>}
       {!loading && <p>{joke.text}</p>}
-      <button onClick={() => setLikes((curr) => [...curr, joke])} disabled={loading}>LIKE</button>
-      <button onClick={() => setDislikes((curr) => [...curr, joke])} disabled={loading}>DISLIKE</button>
+      <button onClick={() => setOpinion("LIKE")} disabled={loading}>LIKE</button>
+      <button onClick={() => setOpinion("DISLIKE")} disabled={loading}>DISLIKE</button>
       <h2>LIKES</h2>
       <ul>
         {likes.map(like => <li key={like}>{like.text}--{like.id} <button onClick={() => removeJoke(like.id, 'LIKE')}>REMOVE</button></li>)}
