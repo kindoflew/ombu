@@ -41,44 +41,6 @@ function App() {
   const [likes, setLikes] = useState(getLikesFromStorage);
   const [dislikes, setDislikes] = useState(getDislikesFromStorage);
 
-
-  const fetchJoke = async () => {
-    setLoading(true);
-    setError(false);
-    try {
-      let data = await fetchJokeAndCheck();
-      if (data.joke) {
-        setJoke({
-          text: data.joke,
-          id: data.id
-        });
-      } else {
-        setJoke({
-          text: `${data.setup} -- ${data.delivery}`,
-          id: data.id
-        });
-      }
-    } catch (err) {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function fetchJokeAndCheck() {
-    const ids = [...likes, ...dislikes];
-    let attempts = 5;
-    while (attempts > 0) {
-      const res = await fetch(`${BASE_URL}${filters.join(',') || 'Any'}${BLACKLIST}`);
-      const data = await res.json();
-      if (!ids.includes(data.id)) {
-        return data;
-      }
-      attempts--;
-    }
-    throw new Error('No more good jokes.');
-  }
-
   const removeLike = (id) => {
     setLikes(likes.filter(item => item.id !== id));
   }
@@ -89,12 +51,10 @@ function App() {
 
   const likeCurrentJoke = () => {
     setLikes([...likes, joke]);
-    fetchJoke();
   }
 
   const dislikeCurrentJoke = () => {
     setDislikes([...dislikes, joke]);
-    fetchJoke();
   }
 
   const handleChange = (index) => {
@@ -110,8 +70,43 @@ function App() {
   }
 
   useEffect(() => {
+    async function fetchJokeAndCheck() {
+      const ids = [...likes, ...dislikes];
+      let attempts = 5;
+      while (attempts > 0) {
+        const res = await fetch(`${BASE_URL}${filters.join(',') || 'Any'}${BLACKLIST}`);
+        const data = await res.json();
+        if (!ids.includes(data.id)) {
+          return data;
+        }
+        attempts--;
+      }
+      throw new Error('No more good jokes.');
+    }
+    const fetchJoke = async () => {
+      setLoading(true);
+      setError(false);
+      try {
+        let data = await fetchJokeAndCheck();
+        if (data.joke) {
+          setJoke({
+            text: data.joke,
+            id: data.id
+          });
+        } else {
+          setJoke({
+            text: `${data.setup} -- ${data.delivery}`,
+            id: data.id
+          });
+        }
+      } catch (err) {
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    }
     fetchJoke();
-  }, [filters]);
+  }, [filters, likes, dislikes]);
 
   useEffect(() => {
     localStorage.setItem('likes', JSON.stringify(likes));

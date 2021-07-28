@@ -11,6 +11,7 @@ let count = 0;
 beforeAll(() => jest.spyOn(window, "fetch"));
 afterAll(() => jest.clearAllMocks());
 beforeEach(async () => {
+  localStorage.clear();
   window.fetch.mockResolvedValue({ json: () => MOCK_JOKES[count++] });
   await waitFor(() => render(<App />));
 });
