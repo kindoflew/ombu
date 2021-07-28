@@ -6,16 +6,40 @@ const BASE_URL = "https://v2.jokeapi.dev/joke/"
 const BLACKLIST = "?blacklistFlags=nsfw,religious,political,racist,sexist,explicit"
 const FILTER_OPTS = ['Programming', 'Miscellaneous', 'Dark', 'Pun', 'Spooky', 'Christmas'];
 
+const getLikesFromStorage = () => {
+  let likes = localStorage.getItem('likes');
+  likes = JSON.parse(likes);
+  return likes || [];
+}
+
+const getDislikesFromStorage = () => {
+  let dislikes = localStorage.getItem('dislikes');
+  dislikes = JSON.parse(dislikes);
+  return dislikes || [];
+}
+
+const getFiltersFromStorage = () => {
+  let filters = localStorage.getItem('filters');
+  filters = JSON.parse(filters);
+  return filters || [];
+}
+
+const getCheckedFromStorage = () => {
+  let checked = localStorage.getItem('checked');
+  checked = JSON.parse(checked);
+  return checked || Array.from({ length: FILTER_OPTS.length}, () => false);
+}
+
 function App() {
   const [joke, setJoke] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  const [checked, setChecked] = useState(Array.from({ length: FILTER_OPTS.length}, () => false));
-  const [filters, setFilters] = useState([]);
+  const [checked, setChecked] = useState(getCheckedFromStorage);
+  const [filters, setFilters] = useState(getFiltersFromStorage);
 
-  const [likes, setLikes] = useState([]);
-  const [dislikes, setDislikes] = useState([]);
+  const [likes, setLikes] = useState(getLikesFromStorage);
+  const [dislikes, setDislikes] = useState(getDislikesFromStorage);
 
 
   const fetchJoke = async () => {
@@ -88,6 +112,13 @@ function App() {
   useEffect(() => {
     fetchJoke();
   }, [filters]);
+
+  useEffect(() => {
+    localStorage.setItem('likes', JSON.stringify(likes));
+    localStorage.setItem('dislikes', JSON.stringify(dislikes));
+    localStorage.setItem('filters', JSON.stringify(filters));
+    localStorage.setItem('checked', JSON.stringify(checked));
+  },[likes, dislikes, filters, checked]);
 
   return (
     <div>
