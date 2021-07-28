@@ -81,11 +81,11 @@ function App() {
       <button onClick={likeCurrentJoke} disabled={loading}>LIKE</button>
       <button onClick={dislikeCurrentJoke} disabled={loading}>DISLIKE</button>
       <h2>LIKES</h2>
-      <ul>
+      <ul data-testid="like-list">
         {likes.map(like => <li key={like}>{like.text}--{like.id} <button onClick={() => removeLike(like.id)}>REMOVE</button></li>)}
       </ul>
       <h2>DISLIKES</h2>
-      <ul>
+      <ul data-testid="dislike-list">
         {dislikes.map(dislike => <li key={dislike}>{dislike.text}--{dislike.id} <button onClick={() => removeDislike(dislike.id)}>REMOVE</button></li>)}
       </ul>
     </div>
