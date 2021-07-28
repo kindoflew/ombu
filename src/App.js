@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 
-const BASE_URL = "https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,religious,political,racist,sexist,explicit";
-
-
+// const BASE_URL = "https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,religious,political,racist,sexist,explicit";
+const BASE_URL = "https://v2.jokeapi.dev/joke/"
+const BLACKLIST = "?blacklistFlags=nsfw,religious,political,racist,sexist,explicit"
+const FILTER_OPTS = ['Programming', 'Miscellaneous', 'Dark', 'Pun', 'Spooky', 'Christmas'];
 
 function App() {
   const [joke, setJoke] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+
+  const [checked, setChecked] = useState(Array.from({ length: FILTER_OPTS.length}, () => false));
+  const [filters, setFilters] = useState([]);
 
   const [likes, setLikes] = useState([]);
   const [dislikes, setDislikes] = useState([]);
@@ -41,7 +45,7 @@ function App() {
     const ids = [...likes, ...dislikes];
     let attempts = 5;
     while (attempts > 0) {
-      const res = await fetch(BASE_URL);
+      const res = await fetch(`${BASE_URL}${filters.join(',') || 'Any'}${BLACKLIST}`);
       const data = await res.json();
       if (!ids.includes(data.id)) {
         return data;
@@ -69,12 +73,34 @@ function App() {
     fetchJoke();
   }
 
+  const handleChange = (index) => {
+    const newChecked = [...checked];
+    newChecked[index] = !newChecked[index];
+    setChecked(newChecked);
+
+    const newFilters = newChecked[index]
+      ? [...filters, FILTER_OPTS[index]]
+      : filters.filter(item => item !== FILTER_OPTS[index])
+    
+    setFilters(newFilters);
+  }
+
   useEffect(() => {
     fetchJoke();
-  }, []);
+  }, [filters]);
 
   return (
     <div>
+      <form>
+        {FILTER_OPTS.map((option, index) => {
+          return (
+            <div key={option}>
+              <input type="checkbox" id={option} name={option} checked={checked[index]} onChange={() => handleChange(index)}/>
+              <label htmlFor={option}>{option}</label>
+            </div>
+          )
+        })}
+      </form>
       {loading && <p>Loading...</p>}
       {error && <p>Something went wrong...</p>}
       {!loading && <p>{joke.text}</p>}

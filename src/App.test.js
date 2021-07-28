@@ -52,4 +52,10 @@ describe("App", () => {
     await waitFor(() => fireEvent.click(removeButton));
     expect(dislikeList.childNodes.length).toEqual(0);
   });
+
+  it("should let a user choose joke filters", async () => {
+    const pun = screen.getByText('Pun');
+    await waitFor(() => fireEvent.click(pun));
+    expect(window.fetch).toHaveBeenNthCalledWith(2, "https://v2.jokeapi.dev/joke/Pun?blacklistFlags=nsfw,religious,political,racist,sexist,explicit");
+  });
 });
