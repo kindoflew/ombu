@@ -1,4 +1,7 @@
 import { useLocalStorage, useFetchJoke } from './hooks';
+import JokeDisplay from './JokeDisplay';
+import Filters from './Filters';
+import OpinionList from './OpinionList';
 import './App.css';
 
 // const BASE_URL = "https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,religious,political,racist,sexist,explicit";
@@ -12,54 +15,41 @@ function App() {
   const [joke, loading, error] = useFetchJoke(filters, likes, dislikes);
 
   const removeLike = (id) => {
-    setLikes(likes.filter(item => item.id !== id));
-  }
+    setLikes(likes.filter((item) => item.id !== id));
+  };
 
   const removeDislike = (id) => {
-    setDislikes(dislikes.filter(item => item.id !== id));
-  }
+    setDislikes(dislikes.filter((item) => item.id !== id));
+  };
 
   const likeCurrentJoke = () => {
     setLikes([...likes, joke]);
-  }
+  };
 
   const dislikeCurrentJoke = () => {
     setDislikes([...dislikes, joke]);
-  }
+  };
 
   const handleChange = (option) => {
     const newFilters = filters.includes(option)
-      ? filters.filter(item => item !== option)
-      : [...filters, option]
-    
+      ? filters.filter((item) => item !== option)
+      : [...filters, option];
+
     setFilters(newFilters);
-  }
+  };
 
   return (
     <div>
-      <form>
-        {FILTER_OPTS.map((option) => {
-          return (
-            <div key={option}>
-              <input type="checkbox" id={option} name={option} checked={filters.includes(option)} onChange={() => handleChange(option)}/>
-              <label htmlFor={option}>{option}</label>
-            </div>
-          )
-        })}
-      </form>
-      {loading && <p>Loading...</p>}
-      {error && <p>Something went wrong...</p>}
-      {!loading && <p>{joke.text}</p>}
-      <button onClick={likeCurrentJoke} disabled={loading}>LIKE</button>
-      <button onClick={dislikeCurrentJoke} disabled={loading}>DISLIKE</button>
-      <h2>LIKES</h2>
-      <ul data-testid="like-list">
-        {likes.map(like => <li key={like}>{like.text}--{like.id} <button onClick={() => removeLike(like.id)}>REMOVE</button></li>)}
-      </ul>
-      <h2>DISLIKES</h2>
-      <ul data-testid="dislike-list">
-        {dislikes.map(dislike => <li key={dislike}>{dislike.text}--{dislike.id} <button onClick={() => removeDislike(dislike.id)}>REMOVE</button></li>)}
-      </ul>
+      <Filters options={FILTER_OPTS} filters={filters} handleChange={handleChange} />
+      <JokeDisplay joke={joke} loading={loading} error={error} />
+      <button onClick={likeCurrentJoke} disabled={loading}>
+        LIKE
+      </button>
+      <button onClick={dislikeCurrentJoke} disabled={loading}>
+        DISLIKE
+      </button>
+      <OpinionList title="LIKES" list={likes} remove={removeLike} testID="like-list" />
+      <OpinionList title="DISLIKES" list={dislikes} remove={removeDislike} testID="dislike-list" />
     </div>
   );
 }
