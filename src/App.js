@@ -1,4 +1,4 @@
-import { useLocalStorage, useFetchJoke } from './hooks';
+import { useFetchJoke, useLocalStorage } from './hooks';
 import JokeDisplay from './JokeDisplay';
 import Filters from './Filters';
 import OpinionList from './OpinionList';
