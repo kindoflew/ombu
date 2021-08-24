@@ -1,45 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useLocalStorage, useFetchJoke } from './hooks';
 import './App.css';
 
 // const BASE_URL = "https://v2.jokeapi.dev/joke/Any?blacklistFlags=nsfw,religious,political,racist,sexist,explicit";
-const BASE_URL = "https://v2.jokeapi.dev/joke/"
-const BLACKLIST = "?blacklistFlags=nsfw,religious,political,racist,sexist,explicit"
 const FILTER_OPTS = ['Programming', 'Miscellaneous', 'Dark', 'Pun', 'Spooky', 'Christmas'];
 
-const getLikesFromStorage = () => {
-  let likes = localStorage.getItem('likes');
-  likes = JSON.parse(likes);
-  return likes || [];
-}
-
-const getDislikesFromStorage = () => {
-  let dislikes = localStorage.getItem('dislikes');
-  dislikes = JSON.parse(dislikes);
-  return dislikes || [];
-}
-
-const getFiltersFromStorage = () => {
-  let filters = localStorage.getItem('filters');
-  filters = JSON.parse(filters);
-  return filters || [];
-}
-
-const getCheckedFromStorage = () => {
-  let checked = localStorage.getItem('checked');
-  checked = JSON.parse(checked);
-  return checked || Array.from({ length: FILTER_OPTS.length}, () => false);
-}
-
 function App() {
-  const [joke, setJoke] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const [filters, setFilters] = useLocalStorage('filters');
+  const [likes, setLikes] = useLocalStorage('likes');
+  const [dislikes, setDislikes] = useLocalStorage('dislikes');
 
-  const [checked, setChecked] = useState(getCheckedFromStorage);
-  const [filters, setFilters] = useState(getFiltersFromStorage);
-
-  const [likes, setLikes] = useState(getLikesFromStorage);
-  const [dislikes, setDislikes] = useState(getDislikesFromStorage);
+  const [joke, loading, error] = useFetchJoke(filters, likes, dislikes);
 
   const removeLike = (id) => {
     setLikes(likes.filter(item => item.id !== id));
@@ -57,71 +27,21 @@ function App() {
     setDislikes([...dislikes, joke]);
   }
 
-  const handleChange = (index) => {
-    const newChecked = [...checked];
-    newChecked[index] = !newChecked[index];
-    setChecked(newChecked);
-
-    const newFilters = newChecked[index]
-      ? [...filters, FILTER_OPTS[index]]
-      : filters.filter(item => item !== FILTER_OPTS[index])
+  const handleChange = (option) => {
+    const newFilters = filters.includes(option)
+      ? filters.filter(item => item !== option)
+      : [...filters, option]
     
     setFilters(newFilters);
   }
 
-  useEffect(() => {
-    async function fetchJokeAndCheck() {
-      const ids = [...likes, ...dislikes];
-      let attempts = 5;
-      while (attempts > 0) {
-        const res = await fetch(`${BASE_URL}${filters.join(',') || 'Any'}${BLACKLIST}`);
-        const data = await res.json();
-        if (!ids.includes(data.id)) {
-          return data;
-        }
-        attempts--;
-      }
-      throw new Error('No more good jokes.');
-    }
-    const fetchJoke = async () => {
-      setLoading(true);
-      setError(false);
-      try {
-        let data = await fetchJokeAndCheck();
-        if (data.joke) {
-          setJoke({
-            text: data.joke,
-            id: data.id
-          });
-        } else {
-          setJoke({
-            text: `${data.setup} -- ${data.delivery}`,
-            id: data.id
-          });
-        }
-      } catch (err) {
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchJoke();
-  }, [filters, likes, dislikes]);
-
-  useEffect(() => {
-    localStorage.setItem('likes', JSON.stringify(likes));
-    localStorage.setItem('dislikes', JSON.stringify(dislikes));
-    localStorage.setItem('filters', JSON.stringify(filters));
-    localStorage.setItem('checked', JSON.stringify(checked));
-  },[likes, dislikes, filters, checked]);
-
   return (
     <div>
       <form>
-        {FILTER_OPTS.map((option, index) => {
+        {FILTER_OPTS.map((option) => {
           return (
             <div key={option}>
-              <input type="checkbox" id={option} name={option} checked={checked[index]} onChange={() => handleChange(index)}/>
+              <input type="checkbox" id={option} name={option} checked={filters.includes(option)} onChange={() => handleChange(option)}/>
               <label htmlFor={option}>{option}</label>
             </div>
           )
